@@ -1,0 +1,38 @@
+{
+  "name": "react-batch-mount",
+  "version": "0.0.2",
+  "description": "This lib use `React.lazy` feature for schedule batch mount large huge components.",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/**/*"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublish": "yarn build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/byTimo/react-batch-mount.git"
+  },
+  "keywords": [
+    "react",
+    "batch",
+    "mount",
+    "lazy",
+    "performance"
+  ],
+  "author": "byTimo <race.timo@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/byTimo/react-batch-mount/issues"
+  },
+  "homepage": "https://github.com/byTimo/react-batch-mount#readme",
+  "devDependencies": {
+    "@types/react": ">=16.6",
+    "typescript": "^4.1.5"
+  },
+  "peerDependencies": {
+    "react": ">=16.6"
+  }
+}
