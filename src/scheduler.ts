@@ -1,4 +1,17 @@
-export type SchedulerConfig = { batchSize: number } | { budget: number };
+export type SchedulerConfig = {
+    /**
+     * The max count of the components in a batch. The scheduler fills the batch completely 
+     * if there are enough components in the mount queue.
+     */
+    batchSize: number
+} | {
+    /**
+     * The time in ms that the scheduler will aim for when mounting batches. The scheduler
+     * counts the mount time of the previous batch and estimates how many components to mount
+     * in the next one.
+     */
+    budget: number
+};
 export type Resolver = () => void;
 
 export interface SchedulerState {
