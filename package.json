@@ -1,6 +1,6 @@
 {
   "name": "react-batch-mount",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "This lib use `React.lazy` feature for schedule batch mount large huge components.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
