@@ -1,5 +1,7 @@
 # React Batch Mount
 
+[Demo](https://codesandbox.io/s/react-batch-mount-demo-wqlk8)
+
 This library allows to mount components batched so browser had time to print frames. If you want to mount many huge components (mounting take a long time) and you can't use any of the standard pattens (paging, lazy load, virtualization, ets) - you can try to use this library.
 
 ## `batchMount`
@@ -36,7 +38,7 @@ Option | Type | Description
 - `register` - register function that need to invoke for start mount of the Component. In `batchMount` the function is Promise's resolve function
 - `mounted` - invoke when Component mount is complete. Invocation decreases internal counter and triggers mount of the next batch.
 
-In the default context realization used the global scheduler so `BatchMountScheduler is not required. You can override the config (bellow) for component subtree using `BatchMountScheduler`.
+In the default context realization used the global scheduler so `BatchMountScheduler` is not required. You can override the config (bellow) for component subtree using `BatchMountScheduler`.
 ```javascript
 import {batchMount, BatchMountScheduler} from "react-batch-mount";
 
