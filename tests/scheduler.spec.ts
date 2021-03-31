@@ -83,7 +83,7 @@ test("resolve all callbacks in all batch when mounted function was called", done
 
     mockRequestAnimationFrame((cb, num) => {
         cb(0);
-        if(num > 0) {
+        if (num > 0) {
             expect(callback1).toHaveBeenCalledTimes(1);
             expect(callback2).toHaveBeenCalledTimes(1);
             expect(requestAnimationFrame).toHaveBeenCalledTimes(2);
@@ -119,7 +119,7 @@ test("calculate batch size by budget", done => {
 
     mockRequestAnimationFrame((cb, num) => {
         cb(0);
-        if(num === 2) {
+        if (num === 2) {
             expect(requestAnimationFrame).toHaveBeenCalledTimes(3);
             done();
         }
@@ -155,7 +155,7 @@ test("ignore budget when first batch mount", done => {
 
     mockRequestAnimationFrame((cb, num) => {
         cb(0);
-        if(num === 2) {
+        if (num === 2) {
             expect(requestAnimationFrame).toHaveBeenCalledTimes(3);
             done();
         }
@@ -166,4 +166,40 @@ test("ignore budget when first batch mount", done => {
     scheduler.register(callback3, "append");
     scheduler.register(callback4, "append");
 });
+
+test("resolve only one batch when delay was set", done => {
+    const scheduler = createScheduler({
+        delay: 50,
+    });
+    const callback1 = jest.fn(scheduler.mounted);
+    const callback2 = jest.fn(scheduler.mounted);
+
+    mockRequestAnimationFrame((cb, num) => {
+        cb(0);
+        if (num === 0) {
+            expect(requestAnimationFrame).toHaveBeenCalledTimes(1);
+            setTimeout(() => {
+                expect(requestAnimationFrame).toHaveBeenCalledTimes(2);
+                done();
+            }, 200);
+        }
+    })
+
+    scheduler.register(callback1, "append");
+    scheduler.register(callback2, "append");
+});
+
+test("call start and end callbacks", done => {
+    const startCallback = jest.fn();
+    const scheduler = createScheduler();
+    const callback1 = jest.fn(scheduler.mounted);
+
+    scheduler.addEventListener("start", startCallback);
+    scheduler.addEventListener("end", () => {
+        expect(startCallback).toHaveBeenCalledTimes(1);
+        expect(callback1).toHaveBeenCalledTimes(1);
+        done();
+    });
+    scheduler.register(callback1, "append");
+})
 

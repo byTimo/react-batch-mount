@@ -13,7 +13,11 @@ export interface SchedulerConfig {
     budget?: number;
 
     trace?: boolean;
+
+    delay?: number;
 }
+
+export type ScheduleEvent = "start" | "end";
 
 export type Resolver = () => void;
 
@@ -25,16 +29,19 @@ export interface SchedulerState {
     prevBatchSize: number;
     awaitingMountCount: number;
     config: SchedulerConfig;
+    callbacks: Record<ScheduleEvent, Array<() => void>>;
 }
 
 export type RegisterMode = "append" | "prepend";
 
 export type Register = (resolver: Resolver, mode: RegisterMode) => void;
 export type Mounted = () => void;
+export type AddEventListener = (event: ScheduleEvent, callback: () => void) => () => void;
 
 export interface Scheduler {
     register: Register;
     mounted: Mounted;
+    addEventListener: AddEventListener;
     state: SchedulerState;
 }
 
@@ -47,6 +54,10 @@ export function createScheduler(config: SchedulerConfig = {}): Scheduler {
         prevBatchSize: 1,
         awaitingMountCount: 0,
         config,
+        callbacks: {
+            start: [],
+            end: [],
+        }
     };
 
     function renderNextBatch() {
@@ -99,6 +110,7 @@ export function createScheduler(config: SchedulerConfig = {}): Scheduler {
         if (state.frameToken == null) {
             state.frameToken = requestAnimationFrame(renderNextBatch);
             trace(config.trace, `RAF ${state.frameToken} registered`);
+            state.callbacks.start.forEach(c => c());
         }
     }
 
@@ -109,16 +121,31 @@ export function createScheduler(config: SchedulerConfig = {}): Scheduler {
             if (state.queue.length === 0) {
                 trace(config.trace, "Mount queue is empty");
                 state.frameToken = null;
+                state.callbacks.end.forEach(c => c());
                 return;
             }
             state.lastMountedTimestamp = Date.now();
             trace(config.trace, `Last mount timestamp is ${state.lastMountedTimestamp}`);
-            state.frameToken = requestAnimationFrame(renderNextBatch);
-            trace(config.trace, `RAF ${state.frameToken} registered`);
+
+            if (config.delay == null) {
+                state.frameToken = requestAnimationFrame(renderNextBatch);
+                trace(config.trace, `RAF ${state.frameToken} registered`);
+            } else {
+                state.frameToken = setTimeout(() => {
+                    state.frameToken = requestAnimationFrame(renderNextBatch);
+                    trace(config.trace, `RAF ${state.frameToken} registered`);
+                }, config.delay) as any as number;
+            }
+
         }
     }
 
-    return {register, mounted, state};
+    function addEventListener(event: ScheduleEvent, callback: () => void): () => void {
+        state.callbacks[event].push(callback);
+        return () => state.callbacks[event].filter(x => x !== callback);
+    }
+
+    return {register, mounted, state, addEventListener};
 }
 
 function trace(tracing: boolean | undefined, message: string): void {

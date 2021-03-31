@@ -7,6 +7,7 @@ test("component type check", () => {
     <BatchMountScheduler maxBatchSize={1} budget={50}/>;
     <BatchMountScheduler trace budget={50}/>;
     <BatchMountScheduler trace maxBatchSize={50}/>;
+    <BatchMountScheduler delay={50}/>;
 
     expect(true);
 })

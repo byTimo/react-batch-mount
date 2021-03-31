@@ -9,7 +9,10 @@ export type BatchMountSchedulerProps = SchedulerConfig;
  */
 export const BatchMountScheduler: React.FC<BatchMountSchedulerProps> = props => {
     const scheduler = React.useMemo(() => createScheduler(props), [])
-    React.useEffect(() => () => cancelAnimationFrame(scheduler.state.frameToken!), []);
+    React.useEffect(() => () => {
+        cancelAnimationFrame(scheduler.state.frameToken!);
+        clearTimeout(scheduler.state.frameToken!);
+    }, []);
 
     return (
         <BatchMountContext.Provider value={scheduler}>
