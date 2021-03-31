@@ -1,19 +1,24 @@
 export interface SchedulerConfig {
     /**
-     * The max count of the components in a batch. The scheduler fills the batch completely
-     * if there are enough components in the mount queue.
-     */
+     * The max count of the components in a batch. If this field and budget field aren't specified - equal 1.
+     * */
     maxBatchSize?: number;
 
     /**
      * The time in ms that the scheduler will aim for when mounting batches. The scheduler
      * counts the mount time of the previous batch and estimates how many components to mount
-     * in the next one.
+     * in the next one. If maxBatchSize is specified, the Math.min value is used.
      */
     budget?: number;
 
+    /**
+     * If true scheduler writes logs to the console during mount.
+     */
     trace?: boolean;
 
+    /**
+     * Set delay between batch mount in milliseconds.
+     */
     delay?: number;
 }
 

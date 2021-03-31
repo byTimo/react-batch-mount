@@ -70,9 +70,11 @@ const Some = batchMount(props => {
     return <div>Some</div>
 });
 ```
-`setGlobalConfig` takes one of two objects:
-- `{batchSize: number}` - explicit specify max component count in one batch
-- `{budget: number}` - specify time in ms that you want to spend on mount one batch. Size of the next batch dynamically calculate by mount time and size of the previous batch.
+`setGlobalConfig` takes an object with field:
+- `maxBatchSize: number` - explicit specify max component count in one batch
+- `budget: number` - specify time in ms that you want to spend on mount one batch. Size of the next batch dynamically calculate by mount time and size of the previous batch.
+- `delay: number` - specify delay between batch mounts in milliseconds
+- `trace: boolean` - enable scheduler writes logs
 
 For `BatchMountScheduler` the config is passed through props.
 ```javascript
@@ -80,10 +82,13 @@ import {BatchMountScheduler} from "react-batch-mount";
 
 const App = () => (
     <>
-        <BatchMountScheduler batchSize={5}>
+        <BatchMountScheduler maxBatchSize={5}>
             ...
         </BatchMountScheduler>
         <BatchMountScheduler budget={300}>
+            ...
+        </BatchMountScheduler>
+        <BatchMountScheduler budget={1000} maxBatchSize={5} delay={30}>
             ...
         </BatchMountScheduler>
     </>
