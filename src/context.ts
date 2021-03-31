@@ -1,5 +1,5 @@
-import { createContext } from "react";
-import { Register, Mounted, createScheduler, SchedulerConfig } from './scheduler';
+import {createContext} from "react";
+import {createScheduler, Mounted, Register, SchedulerConfig} from './scheduler';
 
 export interface BatchMountContextValue {
     register: Register;
