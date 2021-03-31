@@ -3,7 +3,7 @@ export interface SchedulerConfig {
      * The max count of the components in a batch. The scheduler fills the batch completely
      * if there are enough components in the mount queue.
      */
-    batchSize?: number;
+    maxBatchSize?: number;
 
     /**
      * The time in ms that the scheduler will aim for when mounting batches. The scheduler
@@ -38,7 +38,7 @@ export interface Scheduler {
     state: SchedulerState;
 }
 
-export function createScheduler(config: SchedulerConfig): Scheduler {
+export function createScheduler(config: SchedulerConfig = {}): Scheduler {
     const state: SchedulerState = {
         queue: [],
         frameToken: null,
@@ -50,12 +50,6 @@ export function createScheduler(config: SchedulerConfig): Scheduler {
     };
 
     function renderNextBatch() {
-        if (state.queue.length === 0) {
-            trace(config.trace, "Mount queue is empty");
-            state.frameToken = null;
-            return;
-        }
-
         const prevTimestamp =
             (state.lastMountedTimestamp - state.scheduleTimestamp) /
             state.prevBatchSize;
@@ -69,9 +63,23 @@ export function createScheduler(config: SchedulerConfig): Scheduler {
         state.prevBatchSize = batch.length;
         state.awaitingMountCount = batch.length;
 
-        batch.forEach((resolve) => resolve());
         state.scheduleTimestamp = Date.now();
         trace(config.trace, `Schedule timestamp is ${state.scheduleTimestamp}`);
+        batch.forEach((resolve) => resolve());
+    }
+
+    function getBatchSize(config: SchedulerConfig, prevTimestamp: number) {
+        const maxBatchSize = config.maxBatchSize != null && config.maxBatchSize > 0
+            ? config.maxBatchSize
+            : 1;
+
+        if (config.budget != null && prevTimestamp > 0) {
+            const size = Math.floor(config.budget / prevTimestamp);
+            const batchSize = size > 0 ? size : 1;
+            return config.maxBatchSize != null ? Math.min(batchSize, maxBatchSize) : batchSize;
+        }
+
+        return maxBatchSize;
     }
 
     function register(resolver: Resolver, mode: RegisterMode) {
@@ -98,6 +106,11 @@ export function createScheduler(config: SchedulerConfig): Scheduler {
         state.awaitingMountCount--;
         trace(config.trace, `Component was mounted. Awaiting ${state.awaitingMountCount}`);
         if (state.awaitingMountCount <= 0) {
+            if (state.queue.length === 0) {
+                trace(config.trace, "Mount queue is empty");
+                state.frameToken = null;
+                return;
+            }
             state.lastMountedTimestamp = Date.now();
             trace(config.trace, `Last mount timestamp is ${state.lastMountedTimestamp}`);
             state.frameToken = requestAnimationFrame(renderNextBatch);
@@ -106,19 +119,6 @@ export function createScheduler(config: SchedulerConfig): Scheduler {
     }
 
     return {register, mounted, state};
-}
-
-function getBatchSize(config: SchedulerConfig, prevTimestamp: number) {
-    if (config.batchSize != null) {
-        return config.batchSize;
-    }
-
-    if (config.budget != null && prevTimestamp > 0) {
-        const size = Math.floor(config.budget / prevTimestamp);
-        return size > 0 ? size : 1;
-    }
-
-    return 1;
 }
 
 function trace(tracing: boolean | undefined, message: string): void {

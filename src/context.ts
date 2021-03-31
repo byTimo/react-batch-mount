@@ -6,7 +6,7 @@ export interface BatchMountContextValue {
     mounted: Mounted;
 }
 
-const {register, mounted, state} = createScheduler({batchSize: 1});
+const {register, mounted, state} = createScheduler({maxBatchSize: 1});
 
 export function setGlobalConfig(config: SchedulerConfig) {
     state.config = config;

@@ -10,8 +10,9 @@
   "scripts": {
     "build": "tsc",
     "test": "jest",
-    "postversion": "yarn publish",
-    "prepublish": "yarn build"
+    "postbuild": "npm test",
+    "postversion": "npm publish",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
