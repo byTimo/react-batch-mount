@@ -77,3 +77,39 @@ export function batchMount<TProps>(Component: React.ComponentType<TProps>, optio
         return <BatchedComponent {...props} />;
     }
 }
+
+/**
+ * Observes the state of the scheduler. Triggers a rerender if the state has changed.
+ * Returns true if the scheduler has active tasks.
+ */
+export function useSchedulerObserve(): boolean {
+    const [isActive, setIsActive] = React.useState(false);
+    const {addEventListener} = React.useContext(BatchMountContext);
+
+    React.useEffect(() => {
+        const removeStartListener = addEventListener("start", () => setIsActive(true));
+        const removeEndListener = addEventListener("end", () => setIsActive(false));
+        return () => {
+            removeStartListener();
+            removeEndListener();
+        };
+    }, [addEventListener]);
+
+    return isActive;
+}
+
+export interface SchedulerObserverProps {
+    /**
+     * The function of getting children based on the state of the scheduler.
+     * @param isActive true if the scheduler has active tasks
+     */
+    children: (isActive: boolean) => React.ReactElement;
+}
+
+/**
+ * The component that observes the state of the scheduler. Rerendered on state change.
+ */
+export const SchedulerObserver: React.FC<SchedulerObserverProps> = props => {
+    const isActive = useSchedulerObserve();
+    return React.useMemo(() => props.children(isActive), [isActive]);
+}
